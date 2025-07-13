@@ -15,6 +15,21 @@ class Cplx (α : Type u) where
 
 export Cplx (φ sec proj diag braid)
 
+instance : Cplx ι Unit where
+  φ _ _ := ()
+  sec := by
+    intros
+    rfl
+  proj := by
+    intros
+    rfl
+  diag := by
+    intros
+    rfl
+  braid := by
+    intros
+    rfl
+
 instance [Cplx ι α] [Cplx ι β] : Cplx ι (α × β) where
   φ h y := (φ ι (λx ↦ (h x).1) y, φ ι (λx ↦ (h x).2) y)
   sec := by
@@ -29,10 +44,11 @@ instance [Cplx ι α] [Cplx ι β] : Cplx ι (α × β) where
     rfl
   braid := by
     intros
-    simp
-    and_intros
+    apply Prod.ext
+    dsimp
     rw[braid]
     rfl
+    dsimp
     rw[braid]
     rfl
 
