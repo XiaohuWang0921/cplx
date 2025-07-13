@@ -17,13 +17,50 @@ export Cplx (φ sec proj diag braid)
 
 instance [Cplx ι α] [Cplx ι β] : Cplx ι (α × β) where
   φ h y := (φ ι (λx ↦ (h x).1) y, φ ι (λx ↦ (h x).2) y)
-  sec {h x} :=
-    by repeat rw[sec]
-  proj {a x} :=
-    by repeat rw[proj]
-  diag {hh y} :=
-    by repeat rw[diag]
-       rfl
-  braid {hh y y'} :=
-    by rw[braid]
-       sorry
+  sec := by
+    intros
+    repeat rw[sec]
+  proj := by
+    intros
+    repeat rw[proj]
+  diag := by
+    intros
+    repeat rw[diag]
+    rfl
+  braid := by
+    intros
+    simp
+    and_intros
+    rw[braid]
+    rfl
+    rw[braid]
+    rfl
+
+instance {α : Type u} [Cplx ι β] : Cplx ι (α → β) where
+  φ h y a := φ ι (flip h a) y
+  sec:= by
+    intros
+    apply funext
+    intro a
+    unfold flip
+    rw[sec]
+  proj := by
+    intros
+    apply funext
+    intro a
+    unfold flip
+    rw[proj]
+  diag := by
+    intros
+    apply funext
+    intro a
+    unfold flip
+    rw[diag]
+    rfl
+  braid := by
+    intros
+    apply funext
+    intro a
+    unfold flip
+    rw[braid]
+    rfl
