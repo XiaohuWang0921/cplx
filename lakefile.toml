@@ -1,0 +1,10 @@
+name = "cplx"
+version = "0.1.0"
+defaultTargets = ["cplx"]
+
+[[lean_lib]]
+name = "Cplx"
+
+[[lean_exe]]
+name = "cplx"
+root = "Main"
