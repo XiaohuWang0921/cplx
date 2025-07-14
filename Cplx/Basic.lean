@@ -46,11 +46,9 @@ instance [Cplx ι α] [Cplx ι β] : Cplx ι (α × β) where
     intros
     apply Prod.ext
     dsimp
-    rw[braid]
-    rfl
+    apply braid
     dsimp
-    rw[braid]
-    rfl
+    apply braid
 
 instance {α : Type u} [Cplx ι β] : Cplx ι (α → β) where
   φ h y a := φ ι (flip h a) y
@@ -58,21 +56,19 @@ instance {α : Type u} [Cplx ι β] : Cplx ι (α → β) where
     intros
     funext a
     unfold flip
-    rw[sec]
+    apply sec
   proj := by
     intros
     funext a
     unfold flip
-    rw[proj]
+    apply proj
   diag := by
     intros
     funext a
     unfold flip
-    rw[diag]
-    rfl
+    apply diag
   braid := by
     intros
     funext a
     unfold flip
-    rw[braid]
-    rfl
+    apply braid
