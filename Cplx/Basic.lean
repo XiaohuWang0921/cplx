@@ -56,27 +56,23 @@ instance {α : Type u} [Cplx ι β] : Cplx ι (α → β) where
   φ h y a := φ ι (flip h a) y
   sec:= by
     intros
-    apply funext
-    intro a
+    funext
     unfold flip
     rw[sec]
   proj := by
     intros
-    apply funext
-    intro a
+    funext
     unfold flip
     rw[proj]
   diag := by
     intros
-    apply funext
-    intro a
+    funext
     unfold flip
     rw[diag]
     rfl
   braid := by
     intros
-    apply funext
-    intro a
+    funext
     unfold flip
     rw[braid]
     rfl
