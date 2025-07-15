@@ -1,8 +1,10 @@
 def hello := "world"
 
+open Function
+
 def join (f : α → α → β) (a : α) := f a a
 
-def equaliser (f g : α → β) := {a : α // f a = g a}
+def Equaliser (f g : α → β) := {a : α // f a = g a}
 
 variable (ι : X → Y)
 
@@ -44,11 +46,11 @@ instance [Cplx ι α] [Cplx ι β] : Cplx ι (α × β) where
     rfl
   braid := by
     intros
-    apply Prod.ext
+    ext
     dsimp
-    apply braid
+    exact braid
     dsimp
-    apply braid
+    exact braid
 
 instance {α : Type u} [Cplx ι β] : Cplx ι (α → β) where
   φ h y a := φ ι (flip h a) y
@@ -56,19 +58,87 @@ instance {α : Type u} [Cplx ι β] : Cplx ι (α → β) where
     intros
     funext a
     unfold flip
-    apply sec
+    exact sec
   proj := by
     intros
     funext a
     unfold flip
-    apply proj
+    exact proj
   diag := by
     intros
     funext a
     unfold flip
-    apply diag
+    exact diag
   braid := by
     intros
     funext a
     unfold flip
-    apply braid
+    exact braid
+
+class Coh [Cplx ι α] [Cplx ι β] (f : α → β) where
+  prf : φ ι (λx ↦ f (h x)) y = f (φ ι h y)
+
+export Coh (prf)
+
+instance [Cplx ι α] : Coh ι (id : α → α) where
+  prf := by
+    intros
+    dsimp
+
+instance [Cplx ι α] [Cplx ι β] [Cplx ι γ] [Coh ι (f : α → β)] [Coh ι (g : β → γ)] : Coh ι (g ∘ f) where
+  prf := by
+    intros
+    dsimp
+    rw[prf]
+    rw[prf]
+
+instance [Cplx ι β] [Cplx ι γ] [Coh ι (f : β → γ)] : Coh ι (@comp α β γ f) where
+  prf := by
+    intros
+    funext a
+    exact prf
+
+instance [Cplx ι γ] : Coh ι (flip (@comp α β γ) (f : α → β)) where
+  prf := by
+    intros
+    rfl
+
+instance [Cplx ι γ] : Coh ι (@comp α β γ) where
+  prf := by
+    intros
+    rfl
+
+instance [Cplx ι α] [Cplx ι β] [Coh ι (f : α → β)] [Coh ι (g : α → β)] : Cplx ι (Equaliser f g) where
+  φ h y := ⟨φ ι (λx ↦ (h x).val) y, by
+    have inter : φ ι (λx ↦ f (h x).val) y = φ ι (λx ↦ g (h x).val) y := by
+      congr
+      funext x
+      exact (h x).property
+
+    rw[prf] at inter
+    rw[inter]
+    exact prf⟩
+
+  sec := by
+    unfold Equaliser
+    intros
+    ext
+    exact sec
+
+  proj := by
+    unfold Equaliser
+    intros
+    ext
+    exact proj
+
+  diag := by
+    unfold Equaliser
+    intros
+    ext
+    exact diag
+
+  braid := by
+    unfold Equaliser
+    intros
+    ext
+    exact braid
