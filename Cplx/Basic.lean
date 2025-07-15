@@ -4,7 +4,7 @@ open Function
 
 def join (f : α → α → β) (a : α) := f a a
 
-def Equaliser (f g : α → β) := {a : α // f a = g a}
+def Equaliser (f g : α → β) := {a // f a = g a}
 
 variable (ι : X → Y)
 
