@@ -109,15 +109,13 @@ instance [Cplx ι γ] : Coh ι (@comp α β γ) where
     rfl
 
 instance [Cplx ι α] [Cplx ι β] [Coh ι (f : α → β)] [Coh ι (g : α → β)] : Cplx ι (Equaliser f g) where
-  φ h y := ⟨φ ι (λx ↦ (h x).val) y, by
-    have inter : φ ι (λx ↦ f (h x).val) y = φ ι (λx ↦ g (h x).val) y := by
+  φ h y := ⟨φ ι (λx ↦ (h x).val) y, calc
+    f (φ ι (λx ↦ (h x).val) y) = φ ι (λx ↦ f (h x).val) y := prf.symm
+    φ ι (λx ↦ f (h x).val) y = φ ι (λx ↦ g (h x).val) y := by
       congr
       funext x
       exact (h x).property
-
-    rw[prf] at inter
-    rw[inter]
-    exact prf⟩
+    φ  ι (λx ↦ g (h x).val) y = g (φ ι (fun x => (h x).val) y) := prf⟩
 
   sec := by
     unfold Equaliser
