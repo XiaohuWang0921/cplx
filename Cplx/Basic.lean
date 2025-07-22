@@ -107,6 +107,18 @@ instance [Cplx ι γ] : Coh ι (@comp α β γ) where
     intros h y
     rfl
 
+instance [Cplx ι α] [Cplx ι β] : Coh ι (@fst α β) where
+  coh := by
+    intros h y
+    unfold instCplxProd
+    dsimp
+
+instance [Cplx ι α] [Cplx ι β] : Coh ι (@snd α β) where
+  coh := by
+    intros h y
+    unfold instCplxProd
+    dsimp
+
 instance [Cplx ι α] [Cplx ι β] [Coh ι (f : α → β)] [Coh ι (g : α → β)] : Cplx ι (Equaliser f g) where
   φ h y := ⟨φ ι (val ∘ h) y, calc
     f (φ ι (val ∘ h) y) = φ ι (λx ↦ f (h x).val) y := coh.symm
@@ -139,53 +151,6 @@ instance [Cplx ι α] [Cplx ι β] [Coh ι (f : α → β)] [Coh ι (g : α → 
     intros hh y' y
     ext
     exact braid
-
-abbrev LeftSemiCoh [Cplx ι α] [Cplx ι γ] (f : α × β → γ) := Coh ι f.curry
-abbrev RightSemiCoh [Cplx ι β] [Cplx ι γ] (f : α × β → γ) := Coh ι (f ∘ swap).curry
-
-instance [Cplx ι α] [Cplx ι β] [Cplx ι γ] [Coh ι (f : α × β → γ)] : LeftSemiCoh ι f where
-  coh := by
-    intros h y
-    unfold instCplxForall flip
-    funext b
-    dsimp
-    rw[coh]
-    unfold instCplxProd
-    dsimp
-    congr
-    exact proj
-
-instance [Cplx ι α] [Cplx ι β] [Cplx ι γ] [Coh ι (f : α × β → γ)] : RightSemiCoh ι f where
-  coh := by
-    intros h y
-    unfold instCplxForall flip
-    funext a
-    dsimp
-    rw[coh]
-    unfold instCplxProd
-    dsimp
-    congr
-    exact proj
-
-instance [Cplx ι α] [Cplx ι β] [Cplx ι γ] [LeftSemiCoh ι (f : α × β → γ)] [RightSemiCoh ι f] : Coh ι f where
-  coh {h y} := calc
-    φ ι (λx ↦ f (h x)) y = φ ι (λx ↦ f.curry (h x).1 (h x).2) y := by rfl
-    _ = φ ι (join (λx x' ↦ f.curry (h x).1 (h x').2)) y := by rfl
-    _ = φ ι (λx ↦ φ ι (λx' ↦ f.curry (h x).1 (h x').2) y) y := diag.symm
-    _ = φ ι (λx ↦ φ ι (λx' ↦ f ((h x').2, (h x).1).swap) y) y := by rfl
-    _ = φ ι (λx ↦ φ ι (λx' ↦ (f ∘ swap).curry (h x').2 (h x).1) y) y := by rfl
-    _ = φ ι (λx ↦ φ ι (λx' ↦ (f ∘ swap).curry (h x').2) y (h x).1) y := by rfl
-    _ = φ ι (λx ↦ (f ∘ swap).curry (φ ι (λx' ↦ (h x').2) y) (h x).1) y := by
-      congr
-      rw[coh]
-    _ = φ ι (λx ↦ f (φ ι (λx' ↦ (h x').2) y, (h x).1).swap) y := by rfl
-    _ = φ ι (λx ↦ f ((h x).1, φ ι (λx' ↦ (h x').2) y)) y := by rfl
-    _ = φ ι (λx ↦ f.curry (h x).1 (φ ι (λx' ↦ (h x').2) y)) y := by rfl
-    _ = φ ι (λx ↦ f.curry (h x).1) y (φ ι (λx ↦ (h x).2) y) := by rfl
-    _ = f.curry (φ ι (λx ↦ (h x).1) y) (φ ι (λx ↦ (h x).2) y) := by rw[coh]
-    _ = f (φ ι (λx ↦ (h x).1) y, φ ι (λx ↦ (h x).2) y) := by rfl
-    _ = f (φ ι (λx ↦ ((h x).1, (h x).2)) y) := by rfl
-    _ = f (φ ι h y) := by rfl
 
 instance [Cplx ι α] : Coh ι (φ ι : (X → α) → Y → α) where
   coh := by
@@ -231,5 +196,17 @@ instance [Cplx ι α] [Cplx ι β] [Cplx ι γ] [Coh ι (f : α × β → γ)] :
 
 def cohuncurry [Cplx ι α] [Cplx ι β] [Cplx ι γ] (f : α → CH ι β γ) [Coh ι f] (p : α × β) : γ := (f p.1).val p.2
 
-instance  [Cplx ι α] [Cplx ι β] [Cplx ι γ] [Coh ι (f : α → CH ι β γ)] : Coh ι (cohuncurry ι f) where
-  coh := sorry
+instance  [Cplx ι α] [Cplx ι β] [Cplx ι γ] {f : α → CH ι β γ} [Coh ι f] : Coh ι (cohuncurry ι f) where
+  coh {h y} := calc
+    φ ι (λ x ↦ cohuncurry ι f (h x)) y = φ ι (λ x ↦ (f (h x).1).val (h x).2) y := by rfl
+    _ = φ ι (join λ x x' ↦ (f (h x).1).val (h x').2) y := by rfl
+    _ = φ ι (λ x ↦ φ ι (λ x' ↦ (f (h x).1).val (h x').2) y) y := by rw[diag]
+    _ = φ ι (λ x ↦ (f (h x).1).val (φ ι (λ x' ↦ (h x').2) y)) y := by
+      congr
+      funext x
+      exact coh
+    _ = φ ι (λ x ↦ (f (h x).1).val) y (φ ι (λ x ↦ (h x).2) y) := by rfl
+    _ = (φ ι (λ x ↦ f (h x).1) y).val (φ ι (λ x ↦ (h x).2) y) := by rfl
+    _ = (f (φ ι (λ x ↦ (h x).1) y)).val (φ ι (λ x ↦ (h x).2) y) := by rw[coh]
+    _ = (f (φ ι h y).1).val (φ ι h y).2 := by rfl
+    _ = cohuncurry ι f (φ ι h y) := by rfl
