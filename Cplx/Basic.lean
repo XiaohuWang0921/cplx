@@ -1,5 +1,7 @@
 def hello := "world"
 
+open Function Prod Subtype
+
 def join (f : α → α → β) (a : α) := f a a
 
 def Equaliser (f g : α → β) := {a // f a = g a}
@@ -87,33 +89,32 @@ instance [Cplx ι α] [Cplx ι β] [Cplx ι γ] [Coh ι (f : α → β)] [Coh ι
   coh := by
     intros h y
     dsimp
-    rw[coh]
-    rw[coh]
+    repeat rw[coh]
 
-instance [Cplx ι β] [Cplx ι γ] [Coh ι (f : β → γ)] : Coh ι (@f.comp α β γ) where
+instance [Cplx ι β] [Cplx ι γ] [Coh ι (f : β → γ)] : Coh ι (@f.comp α) where
   coh := by
     intros h y
     funext a
     exact coh
 
-instance [Cplx ι γ] : Coh ι (λ (g : β → γ) ↦ g.comp f) where
+instance [Cplx ι γ] : Coh ι (flip (@comp α β γ) f) where
   coh := by
     intros h y
     rfl
 
-instance [Cplx ι γ] : Coh ι (@Function.comp α β γ) where
+instance [Cplx ι γ] : Coh ι (@comp α β γ) where
   coh := by
     intros h y
     rfl
 
 instance [Cplx ι α] [Cplx ι β] [Coh ι (f : α → β)] [Coh ι (g : α → β)] : Cplx ι (Equaliser f g) where
-  φ h y := ⟨φ ι (λx ↦ (h x).val) y, calc
-    f (φ ι (λx ↦ (h x).val) y) = φ ι (λx ↦ f (h x).val) y := coh.symm
+  φ h y := ⟨φ ι (val ∘ h) y, calc
+    f (φ ι (val ∘ h) y) = φ ι (λx ↦ f (h x).val) y := coh.symm
     φ ι (λx ↦ f (h x).val) y = φ ι (λx ↦ g (h x).val) y := by
       congr
       funext x
       exact (h x).property
-    φ  ι (λx ↦ g (h x).val) y = g (φ ι (λx ↦ (h x).val) y) := coh⟩
+    φ  ι (λx ↦ g (h x).val) y = g (φ ι (val ∘ h) y) := coh⟩
 
   sec := by
     unfold Equaliser
@@ -140,13 +141,12 @@ instance [Cplx ι α] [Cplx ι β] [Coh ι (f : α → β)] [Coh ι (g : α → 
     exact braid
 
 abbrev LeftSemiCoh [Cplx ι α] [Cplx ι γ] (f : α × β → γ) := Coh ι f.curry
-abbrev RightSemiCoh [Cplx ι β] [Cplx ι γ] (f : α × β → γ) := Coh ι (λp ↦ f p.swap).curry
+abbrev RightSemiCoh [Cplx ι β] [Cplx ι γ] (f : α × β → γ) := Coh ι (f ∘ swap).curry
 
 instance [Cplx ι α] [Cplx ι β] [Cplx ι γ] [Coh ι (f : α × β → γ)] : LeftSemiCoh ι f where
   coh := by
     intros h y
-    unfold instCplxForall
-    unfold flip
+    unfold instCplxForall flip
     funext b
     dsimp
     rw[coh]
@@ -158,8 +158,7 @@ instance [Cplx ι α] [Cplx ι β] [Cplx ι γ] [Coh ι (f : α × β → γ)] :
 instance [Cplx ι α] [Cplx ι β] [Cplx ι γ] [Coh ι (f : α × β → γ)] : RightSemiCoh ι f where
   coh := by
     intros h y
-    unfold instCplxForall
-    unfold flip
+    unfold instCplxForall flip
     funext a
     dsimp
     rw[coh]
@@ -174,9 +173,9 @@ instance [Cplx ι α] [Cplx ι β] [Cplx ι γ] [LeftSemiCoh ι (f : α × β �
     _ = φ ι (join (λx x' ↦ f.curry (h x).1 (h x').2)) y := by rfl
     _ = φ ι (λx ↦ φ ι (λx' ↦ f.curry (h x).1 (h x').2) y) y := diag.symm
     _ = φ ι (λx ↦ φ ι (λx' ↦ f ((h x').2, (h x).1).swap) y) y := by rfl
-    _ = φ ι (λx ↦ φ ι (λx' ↦ (λp ↦ f p.swap).curry (h x').2 (h x).1) y) y := by rfl
-    _ = φ ι (λx ↦ φ ι (λx' ↦ (λp ↦ f p.swap).curry (h x').2) y (h x).1) y := by rfl
-    _ = φ ι (λx ↦ (λp ↦ f p.swap).curry (φ ι (λx' ↦ (h x').2) y) (h x).1) y := by
+    _ = φ ι (λx ↦ φ ι (λx' ↦ (f ∘ swap).curry (h x').2 (h x).1) y) y := by rfl
+    _ = φ ι (λx ↦ φ ι (λx' ↦ (f ∘ swap).curry (h x').2) y (h x).1) y := by rfl
+    _ = φ ι (λx ↦ (f ∘ swap).curry (φ ι (λx' ↦ (h x').2) y) (h x).1) y := by
       congr
       rw[coh]
     _ = φ ι (λx ↦ f (φ ι (λx' ↦ (h x').2) y, (h x).1).swap) y := by rfl
@@ -196,16 +195,41 @@ instance [Cplx ι α] : Coh ι (φ ι : (X → α) → Y → α) where
     funext y'
     exact braid
 
-abbrev CH α β [Cplx ι α] [Cplx ι β] := @Equaliser (α → β) ((X → α) → Y → β) (λf h ↦ φ ι (f ∘ h)) (λf h ↦ f ∘ φ ι h)
+abbrev CH α β [Cplx ι α] [Cplx ι β] := @Equaliser (α → β) ((X → α) → Y → β) ((φ ι).comp ∘ comp) (flip comp (φ ι) ∘ comp)
 
 instance [Cplx ι α] [Cplx ι β] {f : CH ι α β} : Coh ι f.val where
   coh {h y} := calc
-    φ ι (λ x ↦ f.val (h x)) y = (λ f' h' ↦ φ ι (f' ∘ h')) f.val h y := by rfl
-    _ = (λ f' h' ↦ f' ∘ φ ι h') f.val h y := by rw[f.property]
+    φ ι (λ x ↦ f.val (h x)) y = ((φ ι).comp ∘ comp) f.val h y := by rfl
+    _ = (flip comp (φ ι) ∘ comp) f.val h y := by rw[f.property]
     _ = f.val (φ ι h y) := by rfl
 
 def factorise [Cplx ι α] [Cplx ι β] (f : α → β) [Coh ι f] : CH ι α β := ⟨f, by
   funext h y
   dsimp
-  unfold Function.comp
+  unfold comp flip
   rw[coh]⟩
+
+def cohcurry [Cplx ι α] [Cplx ι β] [Cplx ι γ] (f : α × β → γ) [Coh ι f] (a : α) : CH ι β γ := ⟨f.curry a, by
+  funext h y
+  unfold curry comp flip
+  dsimp
+  rw[coh]
+  unfold instCplxProd
+  dsimp
+  rw[proj]⟩
+
+instance [Cplx ι α] [Cplx ι β] [Cplx ι γ] [Coh ι (f : α × β → γ)] : Coh ι (cohcurry ι f) where
+  coh := by
+    intros h y
+    unfold cohcurry curry CH Equaliser instCplxEqualiserOfCoh instCplxForall flip
+    ext
+    dsimp
+    rw[coh]
+    unfold instCplxProd
+    dsimp
+    rw[proj]
+
+def cohuncurry [Cplx ι α] [Cplx ι β] [Cplx ι γ] (f : α → CH ι β γ) [Coh ι f] (p : α × β) : γ := (f p.1).val p.2
+
+instance  [Cplx ι α] [Cplx ι β] [Cplx ι γ] [Coh ι (f : α → CH ι β γ)] : Coh ι (cohuncurry ι f) where
+  coh := sorry
