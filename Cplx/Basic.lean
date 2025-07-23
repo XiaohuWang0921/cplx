@@ -6,6 +6,8 @@ def join (f : α → α → β) (a : α) := f a a
 
 def Equaliser (f g : α → β) := {a // f a = g a}
 
+section Single
+
 variable (ι : X → Y)
 
 class Cplx (α : Type u) where
@@ -210,3 +212,24 @@ instance  [Cplx ι α] [Cplx ι β] [Cplx ι γ] {f : α → CH ι β γ} [Coh �
     _ = (f (φ ι (λ x ↦ (h x).1) y)).val (φ ι (λ x ↦ (h x).2) y) := by rw[coh]
     _ = (f (φ ι h y).1).val (φ ι h y).2 := by rfl
     _ = cohuncurry ι f (φ ι h y) := by rfl
+
+section Double
+
+variable (η : U → V) (μ : U → X) (ε : X → U) (ν : V → Y)
+variable (split : ∀ u, ε (μ u) = u) (square : ∀ u, ι (μ u) = ν (η u))
+
+instance [Cplx ι α] : Cplx η α where
+  φ h v := φ ι (h ∘ ε) (ν v)
+  sec := by
+    intros h u
+    rw[← square]
+    unfold comp
+    rw[sec]
+    rw[split]
+  proj := proj
+  diag := diag
+  braid := braid
+
+end Double
+
+end Single
