@@ -218,7 +218,7 @@ section Double
 variable (η : U → V) (μ : U → X) (ε : X → U) (ν : V → Y)
 variable (split : ∀ u, ε (μ u) = u) (square : ∀ u, ι (μ u) = ν (η u))
 
-instance [Cplx ι α] : Cplx η α where
+example [Cplx ι α] : Cplx η α where
   φ h v := φ ι (h ∘ ε) (ν v)
   sec := by
     intros h u
@@ -229,6 +229,8 @@ instance [Cplx ι α] : Cplx η α where
   proj := proj
   diag := diag
   braid := braid
+
+-- Can't prove the rest because Lean's instance resolution doesn't work in a complicated case such as this!!!
 
 end Double
 
