@@ -216,13 +216,15 @@ instance  [Cplx ι α] [Cplx ι β] [Cplx ι γ] {f : α → CH ι β γ} [Coh �
 section Double
 
 variable (η : U → V) (μ : U → X) (ε : X → U) (ν : V → Y)
-variable (split : ∀ u, ε (μ u) = u) (square : ∀ u, ι (μ u) = ν (η u))
+variable (split : ∀ u, ε (μ u) = u) (square : ∀ u, ν (η u) = ι (μ u))
 
-example [Cplx ι α] : Cplx η α where
+-- Can't write the following as instances because Lean's too weak to deal with my wisdom.
+
+def cplx_eta [Cplx ι α] : Cplx η α where
   φ h v := φ ι (h ∘ ε) (ν v)
   sec := by
     intros h u
-    rw[← square]
+    rw[square]
     unfold comp
     rw[sec]
     rw[split]
@@ -230,7 +232,12 @@ example [Cplx ι α] : Cplx η α where
   diag := diag
   braid := braid
 
--- Can't prove the rest because Lean's instance resolution doesn't work in a complicated case such as this!!!
+def coh_eta [Cplx ι α] [Cplx ι β] [Coh ι (f : α → β)] : @Coh _ _ η _ _ (cplx_eta ι η μ ε ν split square) (cplx_eta ι η μ ε ν split square) f :=
+  @Coh.mk _ _ η _ _ (cplx_eta ι η μ ε ν split square) (cplx_eta ι η μ ε ν split square) f (by
+    intros
+    unfold cplx_eta comp
+    dsimp
+    exact coh)
 
 end Double
 
